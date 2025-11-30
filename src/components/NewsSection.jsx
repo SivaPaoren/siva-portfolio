@@ -1,44 +1,54 @@
+// src/components/NewsSection.jsx
 import React, { useEffect, useState } from 'react'
-import { useInView } from '../hooks/useInView'
 import NewsList from './NewsList'
 
-const NewsSection = ({ onInView }) => {
-  const { ref, inView } = useInView()
+const NewsSection = () => {
   const [techNews, setTechNews] = useState([])
   const [footballNews, setFootballNews] = useState([])
+
   const [loadingTech, setLoadingTech] = useState(true)
   const [loadingFootball, setLoadingFootball] = useState(true)
-  const [errorTech, setErrorTech] = useState('')
-  const [errorFootball, setErrorFootball] = useState('')
 
-  if (inView) {
-    onInView?.()
-  }
+  const [errorTech, setErrorTech] = useState(null)
+  const [errorFootball, setErrorFootball] = useState(null)
+
+  const gnewsKey = import.meta.env.VITE_GNEWS_KEY
 
   useEffect(() => {
-    const newsApiKey = import.meta.env.VITE_NEWSAPI_KEY
-    const gnewsKey = import.meta.env.VITE_GNEWS_KEY
+    if (!gnewsKey) {
+      setLoadingTech(false)
+      setLoadingFootball(false)
+      setErrorTech('Missing GNews API key')
+      setErrorFootball('Missing GNews API key')
+      return
+    }
+
+    const controller = new AbortController()
 
     const fetchTech = async () => {
       try {
         setLoadingTech(true)
-        const url = `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=6&apiKey=${newsApiKey}`
-        const res = await fetch(url)
+        setErrorTech(null)
+
+        const url = `https://gnews.io/api/v4/search?q=technology&lang=en&max=10&token=${gnewsKey}`
+        const res = await fetch(url, { signal: controller.signal })
+        if (!res.ok) throw new Error(`Tech news error: ${res.status}`)
         const data = await res.json()
-        if (data.status !== 'ok') {
-          throw new Error(data.message || 'Failed to fetch tech news')
-        }
-        const articles =
-          data.articles?.map(a => ({
+
+        setTechNews(
+          (data.articles || []).map(a => ({
             title: a.title,
             url: a.url,
             description: a.description,
-            source: a.source?.name,
+            source: { name: a.source?.name || 'GNews' },
             publishedAt: a.publishedAt,
-          })) ?? []
-        setTechNews(articles)
+          })),
+        )
       } catch (err) {
-        setErrorTech(err.message || 'Could not load tech news.')
+        if (err.name !== 'AbortError') {
+          console.error('Tech news fetch failed', err)
+          setErrorTech('Failed to load tech news')
+        }
       } finally {
         setLoadingTech(false)
       }
@@ -47,71 +57,80 @@ const NewsSection = ({ onInView }) => {
     const fetchFootball = async () => {
       try {
         setLoadingFootball(true)
-        // football-focused query using GNews
-        const url = `https://gnews.io/api/v4/search?q=football&lang=en&max=6&apikey=${gnewsKey}`
-        const res = await fetch(url)
+        setErrorFootball(null)
+
+        const url = `https://gnews.io/api/v4/search?q=football&lang=en&max=10&token=${gnewsKey}`
+        const res = await fetch(url, { signal: controller.signal })
+        if (!res.ok) throw new Error(`Football news error: ${res.status}`)
         const data = await res.json()
-        if (data.errors) {
-          throw new Error(data.errors.join(', '))
-        }
-        const articles =
-          data.articles?.map(a => ({
+
+        setFootballNews(
+          (data.articles || []).map(a => ({
             title: a.title,
             url: a.url,
             description: a.description,
-            source: a.source?.name,
+            source: { name: a.source?.name || 'GNews' },
             publishedAt: a.publishedAt,
-          })) ?? []
-        setFootballNews(articles)
+          })),
+        )
       } catch (err) {
-        setErrorFootball(err.message || 'Could not load football news.')
+        if (err.name !== 'AbortError') {
+          console.error('Football news fetch failed', err)
+          setErrorFootball('Failed to load football news')
+        }
       } finally {
         setLoadingFootball(false)
       }
     }
 
-    if (newsApiKey) fetchTech()
-    else {
-      setLoadingTech(false)
-      setErrorTech('Add VITE_NEWSAPI_KEY in your .env to see tech news.')
-    }
+    fetchTech()
+    fetchFootball()
 
-    if (gnewsKey) fetchFootball()
-    else {
-      setLoadingFootball(false)
-      setErrorFootball('Add VITE_GNEWS_KEY in your .env to see football news.')
-    }
-  }, [])
+    return () => controller.abort()
+  }, [gnewsKey])
 
   return (
-    <div
-      ref={ref}
-      className={`section fade-up ${inView ? 'fade-up-visible' : ''}`}
-    >
+    <section id="news" className="section">
       <div className="container">
         <div className="section-header">
           <h2>Tech &amp; Football News</h2>
           <p className="section-subtitle">
-            A live feed of what&apos;intrest me , Tech and Soccer news from free APIS happening in  world.
+            Live headlines fetched from free APIs – a mix of what I love: tech
+            and football.
           </p>
         </div>
 
         <div className="news-grid">
-          <NewsList
-            title="Latest Tech News"
-            items={techNews}
-            loading={loadingTech}
-            error={errorTech}
-          />
-          <NewsList
-            title="Latest Football News"
-            items={footballNews}
-            loading={loadingFootball}
-            error={errorFootball}
-          />
+          <article className="news-card">
+            <header className="news-header">
+              <h3>Latest in Tech</h3>
+            </header>
+            <div className="news-body">
+              <NewsList
+                items={techNews}
+                loading={loadingTech}
+                error={errorTech}
+                emptyMessage="No tech news available right now."
+              />
+            </div>
+          </article>
+
+          <article className="news-card">
+            <header className="news-header">
+              <h3>Latest in Football</h3>
+            </header>
+            <div className="news-body">
+              <NewsList
+                items={footballNews}
+                loading={loadingFootball}
+                error={errorFootball}
+                emptyMessage="No football news available right now."
+              />
+            </div>
+          </article>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
