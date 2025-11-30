@@ -1,112 +1,84 @@
-import React from "react";
+import React from 'react'
+import { useInView } from '../hooks/useInView'
 
-const Hero = () => {
-  const openLink = (url) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener noreferrer");
-  };
+const Hero = ({ onScrollTo }) => {
+  const { ref, inView } = useInView()
 
-  // Correct URL for Vite + GitHub Pages
-  const resumeUrl = `${import.meta.env.BASE_URL}siva-resume.pdf`;
-  const profileUrl = `${import.meta.env.BASE_URL}profile.png`;
+  const openLink = url => {
+    if (!url) return
+    window.open(url, '_blank', 'noopener noreferrer')
+  }
 
   return (
-    <section id="hero" className="section hero-section">
+    <section ref={ref} className={`section hero-section fade-up ${inView ? 'fade-up-visible' : ''}`}>
       <div className="container hero-grid">
-        {/* LEFT SIDE – MAIN TEXT */}
-        <div className="hero-text">
-          <p className="hero-kicker">Backend • Cloud • Systems</p>
-
+        {/* LEFT: main hero */}
+        <div>
+          <div className="eyebrow">Backend • Cloud • Systems</div>
           <h1 className="hero-title">Siva Paoren</h1>
-
-          <h2 className="hero-subtitle">
-            Software Engineer &nbsp;|&nbsp; Backend Developer &nbsp;|&nbsp; CS Student
-          </h2>
-
-          <p className="hero-description">
-            I&apos;m a 3rd-year Computer Science student at Assumption University,
-            focused on backend engineering, cloud, and system design. I love
-            building reliable systems, playing football, and teaching people
-            through content.
+          <p className="hero-subtitle">
+            Software Engineer | Backend Developer | CS Student
+          </p>
+          <p className="hero-subtitle">
+            I&apos;m a mixed Thai Nepali,Thai national , 3rd-year Computer Science student at Assumption University,
+            focused on backend engineering, cloud, and system design. 
           </p>
 
           <div className="hero-buttons">
             <button
               className="btn btn-primary"
-              onClick={() => openLink(resumeUrl)}
+              onClick={() => openLink('/Siva_Paoren_Resume.pdf')}
             >
               Download Resume (PDF)
             </button>
-
             <button
               className="btn btn-ghost"
-              onClick={() => openLink("https://github.com/SivaPaoren")}
+              onClick={() => openLink('https://github.com/SivaPaoren')}
             >
               View GitHub
             </button>
-
             <button
               className="btn btn-outline"
-              onClick={() =>
-                openLink("https://www.linkedin.com/in/siva-paoren-dhakal/")
-              }
+              onClick={() => openLink('https://www.linkedin.com/in/sivapaoren')}
             >
               LinkedIn
             </button>
           </div>
         </div>
 
-        {/* RIGHT SIDE – THE BOX CARD */}
-        <aside className="hero-card">
-          <div className="hero-card-inner">
-            <div className="hero-card-header">
-              <div className="hero-avatar">
-                <img src={profileUrl} alt="Siva Paoren" />
-              </div>
-              <div>
-                <p className="hero-card-name">Siva Paoren</p>
-                <p className="hero-card-role">Backend • Spring Boot • React</p>
+        {/* RIGHT: info card (the “side thing”) */}
+        <div className="hero-card">
+          <span className="hero-badge">Currently building</span>
+
+          <h3 className="hero-card-title">Backend · Spring Boot · React</h3>
+          <p className="hero-card-text">
+            Currently  working  on Bankify (core banking system).
+          </p>
+
+          <div className="hero-meta">
+            <div>
+              <span className="meta-label">Stack</span>
+              <div className="meta-value">
+                Java, Spring Boot, React, PostgreSQL, MongoDB, Docker
               </div>
             </div>
-
-            <div className="hero-card-body">
-              <div className="hero-card-row">
-                <span className="hero-card-label">Current Focus</span>
-                <span className="hero-card-value">
-                  Core banking system • Note sharing platform
-                </span>
-              </div>
-
-              <div className="hero-card-row">
-                <span className="hero-card-label">Stack</span>
-                <span className="hero-card-value">
-                  Java, Spring Boot, React, PostgreSQL, MongoDB, Docker
-                </span>
-              </div>
-
-              <div className="hero-card-row">
-                <span className="hero-card-label">Hobbies</span>
-                <span className="hero-card-value">
-                  Football, programming, teaching on YouTube
-                </span>
+            <div>
+              <span className="meta-label">Hobbies</span>
+              <div className="meta-value">
+                Football, programming, and teaching on YouTube.
               </div>
             </div>
-
-            <div className="hero-card-footer">
-              <a
-                href="https://www.youtube.com/@yourfavprogrammer"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hero-card-link"
-              >
+            <div>
+              <span className="meta-label">YouTube</span>
+              <div className="meta-value">
                 YouTube: @yourfavprogrammer
-              </a>
+              </div>
             </div>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Hero;
+export default Hero
