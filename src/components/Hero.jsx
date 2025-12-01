@@ -27,7 +27,7 @@ const Hero = ({ onScrollTo }) => {
           <div className="hero-buttons">
             <button
               className="btn btn-primary"
-              onClick={() => openLink('/Siva_Paoren_Resume.pdf')}
+              onClick={() => openLink('/siva-resume.pdf')}
             >
               Download Resume (PDF)
             </button>
